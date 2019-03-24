@@ -8,62 +8,63 @@
  * their requirement
  * @author Jude (iudah)
  */
+#include <stdlib.h>
 #include <assert.h>
 
-#if !defined MANY || MANY < 1
-#define MANY 10
-#endif
-
-static int heap[MANY];
+/** @brief Set class*/
+struct Set
+{
+    /** @brief Keeps track of number of element in a Set.*/
+    unsigned int count;
+};
+struct Ubject
+{
+    /** @brief Keeps track of number of number of time Ubject is added to a Set.*/
+    unsigned int count;
+    /** @brief Set Ubject is added to.*/
+    struct Set *set;
+};
 
 void *new(const void *descriptor, ...)
 {
-    int *p;
-    for (p = heap + 1; p < heap + MANY; ++p)
-        if (!*p)
-            break;
-    assert(p < heap + MANY);
-    *p = MANY;
+    const size_t size = *(const size_t *)descriptor;
+    void *p = calloc(1, size);
+
+    assert(p);
     return p;
 }
 
 void delete(void *item_)
 {
-    int *item = item_;
-    if (item)
-    {
-        assert(item > heap && item < heap + MANY);
-        *item = 0;
-    }
+    free(item_);
 }
 
 void *add(void *set_, const void *element_)
 {
-    int *set = set_;
-    const int *element = element_;
+    struct Set *set = set_;
+    struct Ubject *element = (void *)element_;
 
-    assert(set > heap && set < heap + MANY);
-    assert(*set == MANY);
-    assert(element > heap && element < heap + MANY);
+    assert(set);
+    assert(element);
 
-    if (*element == MANY)
-        *(int *)element = set - heap;
+    if (!element->set)
+        element->set = set;
     else
-        // each element can only be one set in this implementation
-        assert(*element == set - heap);
+        assert(element->set == set); // one set per object
+    element->set->count++;
+    element->count++;
+
     return (void *)element;
 }
 
 void *find(const void *set_, const void *element_)
 {
-    const int *set = set_;
-    const int *element = element_;
+    const struct Ubject *element = element_;
 
-    assert(set > heap && set < heap + MANY);
-    assert(*set == MANY);
-    assert(element > heap && element < heap + MANY);
+    assert(set_);
+    assert(element);
 
-    return *element == set - heap ? (void *)element : 0;
+    return element->set == set_ ? (void *)element : 0;
 }
 
 int contains(const void *set_, const void *element_)
@@ -73,9 +74,13 @@ int contains(const void *set_, const void *element_)
 
 void *drop(void *set_, const void *element_)
 {
-    int *element = find(set_, element_);
+    struct Set *set = set_;
+    struct Ubject *element = find(set_, element_);
     if (element)
-        *element = MANY;
+    {
+        element->set->count--;
+        element->count--;
+    }
     return element;
 }
 int differ(const void *a, const void *b)
@@ -83,5 +88,8 @@ int differ(const void *a, const void *b)
     return a != b;
 }
 
-const void *Set;
-const void *Ubject;
+static const size_t Set_ = sizeof(struct Set);
+static const size_t Ubject_ = sizeof(struct Ubject);
+
+const void *Set = &Set_;
+const void *Ubject = &Ubject_;
