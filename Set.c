@@ -87,7 +87,12 @@ int differ(const void *a, const void *b)
 {
     return a != b;
 }
-
+unsigned int count(const void *set_)
+{
+    const struct Set *set = set_;
+    assert(set);
+    return set->count;
+}
 static const size_t Set_ = sizeof(struct Set);
 static const size_t Ubject_ = sizeof(struct Ubject);
 
