@@ -11,31 +11,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-/** @brief Type description*/
-struct Class
-{
-    /** @brief size of type class*/
-    size_t size;
-    /** @brief Constructor of type class*/
-    void *(*ctor)(void *self, ...);
-    /** @brief Destructor of type class*/
-    void *(*dtor)(void *self);
-    /** @brief */
-    void *(*clone)(const void *self);
-    /**
-     * @brief Compares instances of type.
-     * @param a an instance
-     * @param b an instance
-     * @return 1 if a and b are different, else 0
-     */
-    int (*differ)(const void *a, const void *b);
-};
-struct String
-{
-    /** @brief String descriptor*/
-    const void *class;
-    char *text;
-};
 /** @brief Set class*/
 struct Set
 {
@@ -53,30 +28,6 @@ struct Ubject
     /** @brief Set Ubject is added to.*/
     struct Set *set;
 };
-
-void *new(const void *descriptor, ...)
-{
-    const struct Class *class = descriptor;
-    void *p = calloc(1, class->size);
-
-    assert(p);
-    *(const struct Class **)p = class;
-
-    if (class->ctor)
-    {
-        va_list arg;
-    }
-    return p;
-}
-
-void delete(void *self)
-{
-    const struct Class **class = self;
-
-    if (self && *class && (*class)->dtor)
-        self = (*class)->dtor(self);
-    free(self);
-}
 
 void *add(void *set_, const void *element_)
 {
@@ -122,29 +73,14 @@ void *drop(void *set_, const void *element_)
     }
     return element;
 }
-int differ(const void *self, const void *b)
-{
-    struct Class *const *class = self;
-    assert(self && *class && (*class)->differ);
-    return (*class)->differ(self, b);
-}
-/** @brief Get size of created instance
- * @param self pointer to item originally created by @ref new
- * @return size of self
- */
-size_t sizeOf(const void *self)
-{
-    const struct Class *const *class = self;
 
-    assert(self && class);
-    return (*class)->size;
-}
 unsigned int count(const void *set_)
 {
     const struct Set *set = set_;
     assert(set);
     return set->count;
 }
+
 static const size_t Set_ = sizeof(struct Set);
 static const size_t Ubject_ = sizeof(struct Ubject);
 
