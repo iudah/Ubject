@@ -9,9 +9,10 @@
 #include <stdio.h>
 
 #include "Point.h"
+#include "Circle.h"
 #include "new.h"
 
-char seq_[] = " p";
+char seq_[] = " p c";
 char *seq = seq_;
 
 int main()
@@ -23,6 +24,9 @@ int main()
         {
         case 'p':
             pt = new (Point, 1, 2);
+            break;
+        case 'c':
+            pt = new (Circle, 1, 2, 3);
             break;
         default:
             continue;
