@@ -8,26 +8,29 @@
  */
 #include <stdio.h>
 
-#include "String.h"
+#include "Point.h"
 #include "new.h"
+
+char seq_[] = " p";
+char *seq = seq_;
 
 int main()
 {
-    void *a = new (String, "Text A");
-    void *a_copy = clone(a);
-    void *b = new (String, "Text b");
-
-    printf("size of 'a' == %u\n", sizeOf(a));
-    if (differ(a, b))
-        puts("OK");
-    if (differ(a, a_copy))
-        puts("differ?");
-    if (a == a_copy)
-        puts("clone?");
-
-    delete (a);
-    delete (a_copy);
-    delete (b);
-
+    void *pt;
+    while (*++seq)
+    {
+        switch (*seq)
+        {
+        case 'p':
+            pt = new (Point, 1, 2);
+            break;
+        default:
+            continue;
+        }
+        draw(pt);
+        move(pt, 10, 25);
+        draw(pt);
+        delete (pt);
+    }
     return 0;
 }
