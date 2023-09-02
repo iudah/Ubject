@@ -37,24 +37,9 @@ void delete(void *self)
     free(self);
 }
 
-void *clone(const void *self)
+void draw(const void *self)
 {
     struct Class *const *class = self;
-    assert(self && *class && (*class)->clone);
-    return (*class)->clone(self);
-}
-
-int differ(const void *self, const void *b)
-{
-    struct Class *const *class = self;
-    assert(self && *class && (*class)->differ);
-    return (*class)->differ(self, b);
-}
-
-size_t sizeOf(const void *self)
-{
-    const struct Class *const *class = self;
-
-    assert(self && class);
-    return (*class)->size;
+    assert(self && *class && (*class)->draw);
+    return (*class)->draw(self);
 }
