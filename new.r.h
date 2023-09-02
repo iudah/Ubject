@@ -15,12 +15,8 @@ struct Class
     void *(*ctor)(void *self, va_list *arg);
     /** @brief Destructor of type class*/
     void *(*dtor)(void *self);
-    /** @brief Create a copy of type instance */
-    void *(*clone)(const void *self);
-    /**
-     * @brief Compares instances of type.
-     */
-    int (*differ)(const void *a, const void *b);
+    /** @brief Display an instance */
+    void (*draw)(const void *self);
 };
 
 #endif
