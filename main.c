@@ -8,29 +8,26 @@
  */
 #include <stdio.h>
 
+#include "String.h"
 #include "new.h"
-#include "Ubject.h"
-#include "Set.h"
 
 int main()
 {
-    void *set = new (Set);
+    void *a = new (String, "Text A");
+    void *a_copy = clone(a);
+    void *b = new (String, "Text b");
 
-    void *a = add(set, new (Ubject));
-    void *b = add(set, new (Ubject));
-    void *c = new (Ubject);
-
-    if (contains(set, a) && contains(set, b))
+    printf("size of 'a' == %u\n", sizeOf(a));
+    if (differ(a, b))
         puts("OK");
-    if (contains(set, c))
-        puts("OK");
-    if (differ(a, add(set, a)))
+    if (differ(a, a_copy))
         puts("differ?");
-    if (contains(set, drop(set, a)))
-        puts("drop?");
+    if (a == a_copy)
+        puts("clone?");
 
-    delete (drop(set, b));
-    delete (drop(set, c));
+    delete (a);
+    delete (a_copy);
+    delete (b);
 
     return 0;
 }
