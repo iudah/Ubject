@@ -145,6 +145,34 @@ const void *super(const void *self_)
     return self->super;
 }
 
+void *super_ctor(const void *class_, void *self, va_list *arg_)
+{
+    const struct Class *superclass = super(class_);
+    assert(self && superclass->ctor);
+    return superclass->ctor(self, arg_);
+}
+
+void *super_dtor(const void *class_, void *self)
+{
+    const struct Class *superclass = super(class_);
+    assert(self && superclass->dtor);
+    return superclass->dtor(self);
+}
+
+void *super_differ(const void *class_, void *self, void *b)
+{
+    const struct Class *superclass = super(class_);
+    assert(self && superclass->differ);
+    return superclass->differ(self, b);
+}
+
+void *super_puto(const void *class_, void *self, FILE *f)
+{
+    const struct Class *superclass = super(class_);
+    assert(self && superclass->puto);
+    return superclass->puto(self, f);
+}
+
 static const struct Class ubject[] = {
     {// Ubject class
      {ubject + 1},
