@@ -26,4 +26,9 @@ struct Class
     int (*puto)(const void *self, FILE *f);
 };
 
+void *super_ctor(const void *class_, void *self, va_list *arg_);
+void *super_dtor(const void *class_, void *self);
+void *super_differ(const void *class_, void *self, void *b);
+void *super_puto(const void *class_, void *self, FILE *f);
+
 #endif
