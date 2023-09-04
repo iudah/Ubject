@@ -23,5 +23,6 @@ const void *classOf(const void *self_);
 /** @brief Class descriptor*/
 extern const void *Class;
 size_t sizeOf(const void *self_);
+const void *super(const void *self_);
 
 #endif
