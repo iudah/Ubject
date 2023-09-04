@@ -16,7 +16,7 @@ struct Ubject
 struct Class
 {
     /** @extends Ubject */
-    const struct Ubject *class;
+    const struct Ubject _;
     const char *name;
     const struct Class *super;
     size_t size;
@@ -28,7 +28,7 @@ struct Class
 
 void *super_ctor(const void *class_, void *self, va_list *arg_);
 void *super_dtor(const void *class_, void *self);
-void *super_differ(const void *class_, void *self, void *b);
-void *super_puto(const void *class_, void *self, FILE *f);
+int super_differ(const void *class_, void *self, void *b);
+int super_puto(const void *class_, void *self, FILE *f);
 
 #endif

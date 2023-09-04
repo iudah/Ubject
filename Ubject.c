@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "Ubject.h"
@@ -51,7 +52,7 @@ static int Ubject_differ(const void *self_, const void *b)
 static int Ubject_puto(const void *self_, FILE *f)
 {
     const struct Class *class = classOf(self_);
-    return fprintf(f, "<%s %x>\n", class->name, class);
+    return fprintf(f, "<%s %p>\n", class->name, class);
 }
 
 const void *classOf(const void *self_)
@@ -103,7 +104,7 @@ static void *Class_ctor(void *self_, va_list *arg)
     assert(self->super);
 
     const size_t offset = offsetof(struct Class, ctor);
-    memcpy((char *)self + offset, (char *)self->super + offset, sizeOf(self->super) - offset);
+    memcpy_s((char *)self + offset, sizeOf(self->super) - offset, (char *)self->super + offset, sizeOf(self->super) - offset);
 
     {
         typedef void (*voidf)();
@@ -159,14 +160,14 @@ void *super_dtor(const void *class_, void *self)
     return superclass->dtor(self);
 }
 
-void *super_differ(const void *class_, void *self, void *b)
+int super_differ(const void *class_, void *self, void *b)
 {
     const struct Class *superclass = super(class_);
     assert(self && superclass->differ);
     return superclass->differ(self, b);
 }
 
-void *super_puto(const void *class_, void *self, FILE *f)
+int super_puto(const void *class_, void *self, FILE *f)
 {
     const struct Class *superclass = super(class_);
     assert(self && superclass->puto);
