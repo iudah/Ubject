@@ -26,8 +26,12 @@ struct Ubject {
 struct TypeClass {
     /** Inherited base class structure. */
     struct {
-        /** Pointer to the superclass descriptor. */
+        /** Pointer to the class descriptor. */
+        const struct BaseClass *desc;
+        /** Pointer to the super class. */
         const struct BaseClass *baseclass;
+        size_t _size_t;
+        void *(*voidf)();
     } _;
 
     /** Name of the class. */
