@@ -4,40 +4,130 @@
  */
 #include <assert.h>
 #include <stdarg.h>
-#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "Ubject.h"
-#include "Ubject.r.h"
-
-void *new(const void *class_, ...)
+struct BaseObject
 {
-    const struct Class *class = class_;
-    struct Ubject *ubject;
-    va_list arg;
-
-    assert(class && class->size);
-    ubject = calloc(1, class->size);
-    assert(ubject);
-    ubject->class = class;
-    va_start(arg, class_);
-    ubject = ctor(ubject, &arg);
-    va_end(arg);
-    return ubject;
-}
-
-void delete(void *self_)
+    const struct BaseClass *class;
+};
+struct BaseClass
 {
-    if (self_)
-        free(dtor(self_));
-}
+    struct BaseObject _;
+    const struct BaseClass *super;
+    size_t size;
+    void *(*ctor)(void *self, va_list *arg);
+};
 
-static void *Ubject_ctor(void *self_, va_list *arg)
+static void *BaseObject_ctor(void *self_, va_list *arg)
 {
     return self_;
 }
+
+const void *classOf(const void *self_)
+{
+    const struct BaseObject *self = self_;
+    assert(self && self->class);
+    return self->class;
+}
+
+void *ctor(void *self_, va_list *arg)
+{
+    const struct BaseClass *class = classOf(self_);
+
+    assert(class->ctor);
+    return class->ctor(self_, arg);
+}
+
+size_t sizeOf(const void *self_)
+{
+    const struct BaseClass *class = classOf(self_);
+    return class->size;
+}
+
+const void *super(const void *self_)
+{
+    const struct BaseClass *self = self_;
+    assert(self && self->super);
+    return self->super;
+}
+
+void *super_ctor(const void *class_, void *self, va_list *arg_)
+{
+    const struct BaseClass *superclass = super(class_);
+    assert(self && superclass->ctor);
+    return superclass->ctor(self, arg_);
+}
+
+static void *BaseClass_ctor(void *self_, va_list *arg)
+{
+    struct BaseClass *self = self_;
+
+    // self->name = va_arg(*arg, char *);
+    self->super = va_arg(*arg, struct BaseClass *);
+    self->size = va_arg(*arg, size_t);
+
+    assert(self->super);
+
+    const size_t offset = offsetof(struct BaseClass, ctor);
+    const size_t limit = sizeOf(self->super) - offset;
+    memcpy_s((char *)self + offset, limit, (char *)self->super + offset, limit);
+
+    {
+        typedef void (*voidf)();
+        voidf selector;
+        va_list args = *arg;
+        while ((selector = va_arg(args, voidf)))
+        {
+            voidf method = va_arg(args, voidf);
+            if (selector == (voidf)ctor)
+                *(voidf *)&self->ctor = method;
+        }
+    }
+    return self;
+}
+
+static const struct BaseClass baseObject[] = {
+    {// BaseObject class
+     {baseObject + 1},
+     baseObject,
+     sizeof(struct BaseObject),
+     BaseObject_ctor},
+    {// BaseObject class
+     {baseObject + 1},
+     baseObject,
+     sizeof(struct BaseClass),
+     BaseClass_ctor}};
+
+const void *BaseObject = baseObject;
+const void *BaseClass = baseObject + 1;
+
+size_t mem_used = 0;
+
+void *new(const void *class_, ...)
+{
+    const struct BaseClass *class = class_;
+    struct BaseObject *object;
+    va_list arg;
+
+    assert(class && class->size);
+    mem_used += class->size;
+    object = calloc(1, class->size);
+    assert(object);
+    object->class = class;
+    va_start(arg, class_);
+    object = ctor(object, &arg);
+    va_end(arg);
+
+    printf("Used %uB\n", mem_used);
+
+    return object;
+}
+
+#include "Ubject.h"
+#include "Ubject.r.h"
 
 static void *Ubject_dtor(void *self_)
 {
@@ -49,150 +139,69 @@ static int Ubject_differ(const void *self_, const void *b)
     return self_ != b;
 }
 
-static int Ubject_puto(const void *self_, FILE *f)
+void *super_dtor(const void *class_, void *self)
 {
-    const struct Class *class = classOf(self_);
-    return fprintf(f, "<%s %p>\n", class->name, class);
+    const struct TypeClass *superclass = super(class_);
+    assert(self && superclass->dtor);
+    return superclass->dtor(self);
 }
 
-const void *classOf(const void *self_)
+static void *TypeClass_ctor(void *self_, va_list *arg)
 {
-    const struct Ubject *self = self_;
-    assert(self && self->class);
-    return self->class;
+    struct TypeClass *self = super_ctor(TypeClass, self_, arg);
+    typedef void (*voidf)();
+    voidf selector;
+    va_list args = *arg;
+    while ((selector = va_arg(args, voidf)))
+    {
+        voidf method = va_arg(args, voidf);
+        if (selector == (voidf)dtor)
+            *(voidf *)&self->dtor = method;
+        else if (selector == (voidf)className)
+            *(voidf *)&self->name = method;
+    }
+    return self;
 }
 
-void *ctor(void *self_, va_list *arg)
+const char *className(const void *self_)
 {
-    const struct Class *class = classOf(self_);
-
-    assert(class->ctor);
-    return class->ctor(self_, arg);
+    const struct TypeClass *class = classOf(self_);
+    return class->name;
 }
 
 void *dtor(void *self_)
 {
-    const struct Class *class = classOf(self_);
+    const struct TypeClass *class = classOf(self_);
 
     assert(class->dtor);
     return class->dtor(self_);
 }
 
-int differ(const void *self_, const void *b)
+void delete(void *self_)
 {
-    const struct Class *class = classOf(self_);
-
-    assert(class->differ);
-    return class->differ(self_, b);
+    if (self_)
+        free(dtor(self_));
 }
-int puto(const void *self_, FILE *f)
-{
-    const struct Class *class = classOf(self_);
-
-    assert(class->puto);
-    return class->puto(self_, f);
-}
-
-static void *Class_ctor(void *self_, va_list *arg)
-{
-    struct Class *self = self_;
-
-    self->name = va_arg(*arg, char *);
-    self->super = va_arg(*arg, struct Class *);
-    self->size = va_arg(*arg, size_t);
-
-    assert(self->super);
-
-    const size_t offset = offsetof(struct Class, ctor);
-    memcpy_s((char *)self + offset, sizeOf(self->super) - offset, (char *)self->super + offset, sizeOf(self->super) - offset);
-
-    {
-        typedef void (*voidf)();
-        voidf selector;
-        va_list args = *arg;
-        while ((selector = va_arg(args, voidf)))
-        {
-            voidf method = va_arg(args, voidf);
-            if (selector == (voidf)ctor)
-                *(voidf *)&self->ctor = method;
-            else if (selector == (voidf)dtor)
-                *(voidf *)&self->dtor = method;
-            else if (selector == (voidf)differ)
-                *(voidf *)&self->differ = method;
-            else if (selector == (voidf)puto)
-                *(voidf *)&self->puto = method;
-        }
-    }
-    return self;
-}
-
-static void *Class_dtor(void *self_)
-{
-    struct Class *self = self_;
-    fprintf(stderr, "%s: cannot destroy class\n", self->name);
-    return 0;
-}
-
-size_t sizeOf(const void *self_)
-{
-    const struct Class *class = classOf(self_);
-    return class->size;
-}
-
-const void *super(const void *self_)
-{
-    const struct Class *self = self_;
-    assert(self && self->super);
-    return self->super;
-}
-
-void *super_ctor(const void *class_, void *self, va_list *arg_)
-{
-    const struct Class *superclass = super(class_);
-    assert(self && superclass->ctor);
-    return superclass->ctor(self, arg_);
-}
-
-void *super_dtor(const void *class_, void *self)
-{
-    const struct Class *superclass = super(class_);
-    assert(self && superclass->dtor);
-    return superclass->dtor(self);
-}
-
-int super_differ(const void *class_, void *self, void *b)
-{
-    const struct Class *superclass = super(class_);
-    assert(self && superclass->differ);
-    return superclass->differ(self, b);
-}
-
-int super_puto(const void *class_, void *self, FILE *f)
-{
-    const struct Class *superclass = super(class_);
-    assert(self && superclass->puto);
-    return superclass->puto(self, f);
-}
-
-static const struct Class ubject[] = {
-    {// Ubject class
-     {ubject + 1},
-     "Ubject",
-     ubject,
+static const struct BaseClass typeClass = {
+    // struct BaseObject _;
+    {baseObject + 1},
+    // const struct Class *super;
+    baseObject + 1,
+    // size_t size;
+    sizeof(struct TypeClass),
+    // void *(*ctor)(void *self, va_list *arg);
+    TypeClass_ctor,
+};
+static const struct TypeClass ubject = {
+    {// struct BaseObject super;
+     {&typeClass},
+     // const struct Class *super;
+     baseObject + 1,
+     // size_t size;
      sizeof(struct Ubject),
-     Ubject_ctor,
-     Ubject_dtor,
-     Ubject_differ,
-     Ubject_puto},
-    {// Class class
-     {ubject + 1},
-     "Class",
-     ubject,
-     sizeof(struct Class),
-     Class_ctor,
-     Class_dtor,
-     Ubject_differ,
-     Ubject_puto}};
+     // void *(*ctor)(void *self, va_list *arg);
+     BaseObject_ctor},
+    "Ubject",
+    Ubject_dtor};
 
-const void *Ubject = ubject;
-const void *Class = ubject + 1;
+const void *Ubject = &ubject, *TypeClass = &typeClass;
