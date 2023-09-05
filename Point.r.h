@@ -21,7 +21,7 @@ void super_draw(const void *class, const void *self);
 
 struct PointClass
 {
-    const struct Class _;
+    const struct TypeClass _;
     void (*draw)(const void *self);
 };
 #endif
