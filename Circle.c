@@ -38,10 +38,10 @@ void initCircle()
     if (!Circle)
     {
         initPoint();
-        Circle = new (PointClass, "Circle", Point,
+        Circle = new (PointClass, Point,
                       sizeof(struct Circle),
                       ctor, Circle_ctor,
-                      draw, Circle_draw,
+                      draw, Circle_draw, className, "Circle",
                       0);
     }
 }
