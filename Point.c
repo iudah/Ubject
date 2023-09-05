@@ -58,13 +58,14 @@ const void *Point = 0, *PointClass = 0;
 void initPoint()
 {
     if (!PointClass)
-        PointClass = new (Class, "PointClass", Class,
+        PointClass = new (TypeClass, //"PointClass",
+                          TypeClass,
                           sizeof(struct PointClass),
                           ctor, PointClass_ctor, 0);
     if (!Point)
-        Point = new (PointClass, "Point",
+        Point = new (PointClass,
                      Ubject, sizeof(struct Point),
                      ctor, Point_ctor,
-                     draw, Point_draw,
+                     draw, Point_draw, className, "Point",
                      0);
 }
