@@ -2,12 +2,14 @@
  * @file Ubject.c
  * @brief Ubject implementation
  */
+
+#define __STDC_WANT_LIB_EXT1__ 1 // required for memcpy_s
+#include <string.h>
 #include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 struct BaseObject
 {
@@ -73,7 +75,11 @@ static void *BaseClass_ctor(void *self_, va_list *arg)
 
     const size_t offset = offsetof(struct BaseClass, ctor);
     const size_t limit = sizeOf(self->super) - offset;
+#ifdef __STDC_LIB_EXT1__
     memcpy_s((char *)self + offset, limit, (char *)self->super + offset, limit);
+#else
+    memcpy((char *)self + offset, (char *)self->super + offset, limit);
+#endif
 
     {
         typedef void (*voidf)();
@@ -194,7 +200,9 @@ static const struct BaseClass typeClass = {
 };
 static const struct TypeClass ubject = {
     {// struct BaseObject super;
-     {&typeClass},
+     // ===
+     // const struct Class *class;
+     &typeClass,
      // const struct Class *super;
      baseObject + 1,
      // size_t size;
