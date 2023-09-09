@@ -53,9 +53,9 @@ void *ctor(void *self_, va_list *arg);
  * @param self_ A pointer to the object.
  * @return A pointer to the object after destruction.
  */
- void *dtor(void *self_);
+void *dtor(void *self_);
 
- /**
+/**
  * @brief Check if two objects are different.
  *
  * This function compares two objects and returns 1 if they are different, 0 if
@@ -89,15 +89,15 @@ int puto(const void *self, FILE *f);
 const void *classOf(const void *self_);
 
 /**
- * @brief Get the name of a class.
+ * @brief Get the name of class of object.
  *
- * This function returns the name of the given class.
+ * This function returns the name of the class of the given object.
  *
- * @param self_ A pointer to the class descriptor.
+ * @param self_ A pointer to the object.
  * @return The name of the class.
  */
 const char *className(const void *self_);
-
+const char *descName(const void *class_);
 /**
  * @brief Get the size of an object.
  *
