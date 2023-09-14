@@ -5,13 +5,30 @@
 #ifndef UBJECT_R_H
 #define UBJECT_R_H
 
+#ifdef _WIN32
+
+#ifdef UBJECT_EXPORTS
+#define UBJECTAPI __declspec(dllexport)
+#else
+#define UBJECTAPI __declspec(dllimport)
+#endif
+#define UBJECTCALL __cdecl
+
+#else
+
+#define UBJECTAPI
+#define UBJECTCALL
+
+#endif
+
 /**
  * @struct Ubject
  * @brief Represents a base object with class information.
  *
  * This structure contains a pointer to the class descriptor of an object.
  */
-struct Ubject {
+struct Ubject
+{
     /** Pointer to the class descriptor of the object. */
     const struct BaseClass *class;
 };
@@ -23,15 +40,17 @@ struct Ubject {
  * This structure contains information about a class, including its name and
  * destructor function.
  */
-struct TypeClass {
+struct TypeClass
+{
     /** Inherited base class structure. */
-    struct {
+    struct
+    {
         /** Pointer to the class descriptor. */
         const struct BaseClass *desc;
         /** Pointer to the super class. */
         const struct BaseClass *baseclass;
         size_t _size_t;
-        void *(*voidf)();
+        void *(*voidf_)();
     } _;
 
     /** Name of the class. */
@@ -41,8 +60,22 @@ struct TypeClass {
     void *(*dtor)(void *self);
 };
 
-/** @brief Class descriptor*/
-extern const void *TypeClass;
+/** @brief Class descriptor
+ * @example{
+ * SomeTypeClass = new (TypeClass, TypeClass,
+ *                       sizeof(struct SomeTypeClass),
+ *                  ctor, SomeClass_ctor, 0);
+ * SomeType = new (SomeTypeClass, SomeSuperType_to_inherit_from,
+ *                   sizeof(struct SomeType),
+ *                   ctor, SomeType_ctor,
+ *                   dtor, SomeType_dtor,
+ *                   className, "SomeType",
+ *                      ...,
+ *                   someFnSelector, correspondingOverloadFn,
+ *                   0);
+ * }
+ */
+extern UBJECTAPI const void *TypeClass;
 
 /**
  * @brief Invoke the superclass constructor.

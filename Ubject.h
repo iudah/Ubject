@@ -5,6 +5,22 @@
 #ifndef UBJECT_H
 #define UBJECT_H
 
+#ifdef _WIN32
+
+#ifdef UBJECT_EXPORTS
+#define UBJECTAPI __declspec(dllexport)
+#else
+#define UBJECTAPI __declspec(dllimport)
+#endif
+#define UBJECTCALL __cdecl
+
+#else
+
+#define UBJECTAPI
+#define UBJECTCALL
+
+#endif
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,7 +35,7 @@
  * @param ... Variable arguments passed to the object's constructor.
  * @return A pointer to the newly created object.
  */
-void *new(const void *class, ...);
+UBJECTAPI void UBJECTCALL *new(const void *class, ...);
 
 /**
  * @brief Free the memory associated with an object.
@@ -29,10 +45,10 @@ void *new(const void *class, ...);
  *
  * @param self_ A pointer to the object to be deleted.
  */
-void delete(void *self);
+UBJECTAPI void delete(void *self);
 
 /**@brief Ubject descriptor */
-extern const void *Ubject;
+extern UBJECTAPI const void *Ubject;
 
 /**
  * @brief Invoke the constructor of an object.
@@ -43,7 +59,7 @@ extern const void *Ubject;
  * @param arg Variable arguments passed to the constructor.
  * @return A pointer to the initialized object.
  */
-void *ctor(void *self_, va_list *arg);
+UBJECTAPI void *ctor(void *self_, va_list *arg);
 
 /**
  * @brief Invoke the destructor of an object.
@@ -53,7 +69,7 @@ void *ctor(void *self_, va_list *arg);
  * @param self_ A pointer to the object.
  * @return A pointer to the object after destruction.
  */
-void *dtor(void *self_);
+UBJECTAPI void *dtor(void *self_);
 
 /**
  * @brief Check if two objects are different.
@@ -65,7 +81,7 @@ void *dtor(void *self_);
  * @param b A pointer to the second object.
  * @return 1 if different, 0 if the same.
  */
-int differ(const void *self, const void *b);
+UBJECTAPI int differ(const void *self, const void *b);
 
 /**
  * @brief Print the object's representation to a file.
@@ -76,7 +92,7 @@ int differ(const void *self, const void *b);
  * @param f The file stream to write to.
  * @return The number of characters written to the file.
  */
-int puto(const void *self, FILE *f);
+UBJECTAPI int puto(const void *self, FILE *f);
 
 /**
  * @brief Get the class descriptor of an object.
@@ -86,7 +102,7 @@ int puto(const void *self, FILE *f);
  * @param self_ A pointer to the object.
  * @return A pointer to the class descriptor.
  */
-const void *classOf(const void *self_);
+UBJECTAPI const void *classOf(const void *self_);
 
 /**
  * @brief Get the name of class of object.
@@ -96,8 +112,8 @@ const void *classOf(const void *self_);
  * @param self_ A pointer to the object.
  * @return The name of the class.
  */
-const char *className(const void *self_);
-const char *descName(const void *class_);
+UBJECTAPI const char *className(const void *self_);
+UBJECTAPI const char *descName(const void *class_);
 /**
  * @brief Get the size of an object.
  *
@@ -106,7 +122,7 @@ const char *descName(const void *class_);
  * @param self_ A pointer to the object.
  * @return The size of the object in bytes.
  */
-size_t sizeOf(const void *self_);
+UBJECTAPI size_t sizeOf(const void *self_);
 
 /**
  * @brief Get the superclass of a class.
@@ -116,6 +132,6 @@ size_t sizeOf(const void *self_);
  * @param self_ A pointer to the class.
  * @return A pointer to the superclass descriptor.
  */
-const void *super(const void *self_);
+UBJECTAPI const void *super(const void *self_);
 
 #endif
