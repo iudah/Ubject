@@ -172,6 +172,7 @@ void *new(const void *class_, ...)
     return object;
 }
 
+#define UBJECT_EXPORTS
 #include "Ubject.h"
 #include "Ubject.r.h"
 
