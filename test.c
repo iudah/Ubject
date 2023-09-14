@@ -2,6 +2,8 @@
 
 int main()
 {
+    void *ctor_ = ctor;
+
     void *a = new (Ubject);
 
     printf("%s\n", className(a));
