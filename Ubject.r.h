@@ -87,7 +87,7 @@ extern UBJECTAPI const void *TypeClass;
  * @param arg_ Variable argument list.
  * @return Pointer to the initialized object.
  */
-void *super_ctor(const void *class_, void *self, va_list *arg_);
+UBJECTAPI void *super_ctor(const void *class_, void *self, va_list *arg_);
 
 /**
  * @brief Invoke the superclass destructor.
@@ -98,6 +98,6 @@ void *super_ctor(const void *class_, void *self, va_list *arg_);
  * @param self Pointer to the object.
  * @return Pointer to the object after destruction.
  */
-void *super_dtor(const void *class_, void *self);
+UBJECTAPI void *super_dtor(const void *class_, void *self);
 
 #endif
