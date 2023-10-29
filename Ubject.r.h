@@ -5,6 +5,9 @@
 #ifndef UBJECT_R_H
 #define UBJECT_R_H
 
+#include <stdarg.h>
+#include <stddef.h>
+
 #ifdef _WIN32
 
 #ifdef UBJECT_EXPORTS
@@ -27,10 +30,17 @@
  *
  * This structure contains a pointer to the class descriptor of an object.
  */
-struct Ubject
-{
+struct Ubject {
+#ifndef UBJECT_C
+  char ___[sizeof(struct _ubj_ {
+#endif
     /** Pointer to the class descriptor of the object. */
-    const struct BaseClass *class;
+    const struct BaseClass *class_;
+    /** Number of time object is referenced*/
+    int reference;
+#ifndef UBJECT_C
+  })];
+#endif
 };
 
 /**
@@ -40,24 +50,22 @@ struct Ubject
  * This structure contains information about a class, including its name and
  * destructor function.
  */
-struct TypeClass
-{
-    /** Inherited base class structure. */
-    struct
-    {
-        /** Pointer to the class descriptor. */
-        const struct BaseClass *desc;
-        /** Pointer to the super class. */
-        const struct BaseClass *baseclass;
-        size_t _size_t;
-        void *(*voidf_)();
-    } _;
+struct TypeClass {
+  /** Inherited base class structure. */
+  struct {
+    /** Pointer to the class descriptor. */
+    const struct BaseClass *desc;
+    /** Pointer to the super class. */
+    const struct BaseClass *baseclass;
+    size_t _size_t;
+    void *(*voidf_)();
+  } _;
 
-    /** Name of the class. */
-    char *name;
+  /** Name of the class. */
+  char *name;
 
-    /** Pointer to the destructor function of the class. */
-    void *(*dtor)(void *self);
+  /** Pointer to the destructor function of the class. */
+  void *(*dtor)(void *self);
 };
 
 /** @brief Class descriptor
