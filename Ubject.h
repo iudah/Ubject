@@ -35,7 +35,7 @@
  * @param ... Variable arguments passed to the object's constructor.
  * @return A pointer to the newly created object.
  */
-UBJECTAPI void UBJECTCALL *new(const void *class, ...);
+UBJECTAPI void UBJECTCALL *init(const void *class_, ...);
 
 /**
  * @brief Free the memory associated with an object.
@@ -45,7 +45,7 @@ UBJECTAPI void UBJECTCALL *new(const void *class, ...);
  *
  * @param self_ A pointer to the object to be deleted.
  */
-UBJECTAPI void delete(void *self);
+UBJECTAPI void blip(void *self);
 
 /**@brief Ubject descriptor */
 extern UBJECTAPI const void *Ubject;
@@ -72,6 +72,17 @@ UBJECTAPI void *ctor(void *self_, va_list *arg);
 UBJECTAPI void *dtor(void *self_);
 
 /**
+ * @brief Increment reference count of object.
+ *
+ * This function increments the reference counter of the given object.
+ *
+ * @param self_ A pointer to the object.
+ * @return Current number of references made.
+ */
+UBJECTAPI const int reference(void *self_);
+UBJECTAPI const int getReference(void *self_);
+
+/**
  * @brief Check if two objects are different.
  *
  * This function compares two objects and returns 1 if they are different, 0 if
@@ -93,6 +104,11 @@ UBJECTAPI int differ(const void *self, const void *b);
  * @return The number of characters written to the file.
  */
 UBJECTAPI int puto(const void *self, FILE *f);
+
+extern UBJECTAPI const struct Ubject_err_disp__ {
+  void (*error)(const char *fmt, ...);
+  void (*warn)(const char *fmt, ...);
+} UbjectError;
 
 /**
  * @brief Get the class descriptor of an object.
@@ -127,11 +143,12 @@ UBJECTAPI size_t sizeOf(const void *self_);
 /**
  * @brief Get the superclass of a class.
  *
- * This function returns a pointer to the superclass descriptor of the given class.
+ * This function returns a pointer to the superclass descriptor of the given
+ * class.
  *
- * @param self_ A pointer to the class.
+ * @param class_ A pointer to the class.
  * @return A pointer to the superclass descriptor.
  */
-UBJECTAPI const void *super(const void *self_);
+UBJECTAPI const void *super(const void *class_);
 
 #endif
