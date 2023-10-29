@@ -4,276 +4,266 @@
  */
 
 #define __STDC_WANT_LIB_EXT1__ 1 // required for memcpy_s
-#include <string.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-void ubject_error(const char *fmt, ...)
-{
-    va_list arg;
-    va_start(arg, fmt);
-    vprintf(fmt, arg);
-    va_end(arg);
-    exit(-1);
-}
-void ubject_warn(const char *fmt, ...)
-{
-    va_list arg;
-    va_start(arg, fmt);
-    vprintf(fmt, arg);
-    va_end(arg);
-    return;
-}
+#include "Ubject.h"
 
-struct BaseObject
-{
-    const struct BaseClass *class;
+struct BaseObject {
+  const struct BaseClass *class;
 };
-struct BaseClass
-{
-    struct BaseObject _;
-    const struct BaseClass *super;
-    size_t size;
-    void *(*ctor)(void *self, va_list *arg);
+struct BaseClass {
+  struct BaseObject _;
+  const struct BaseClass *super;
+  size_t size;
+  void *(*ctor)(void *self, va_list *arg);
 };
 
-static void *BaseObject_ctor(void *self_, va_list *arg)
-{
-    return self_;
+static void *BaseObject_ctor(void *self_, va_list *arg) { return self_; }
+
+const void *classOf(const void *self_) {
+  const struct BaseObject *self = self_;
+  if (!self) {
+    UbjectError.error("classOf: trying to access class of NULL object\n");
+  }
+  if (!self->class) {
+    UbjectError.error("classOf: class of object is NULL\n");
+  }
+  return self->class;
 }
 
-const void *classOf(const void *self_)
-{
-    const struct BaseObject *self = self_;
-    if (!self)
-    {
-        ubject_error("classOf: trying to access class of NULL object\n");
-    }
-    if (!self->class)
-    {
-        ubject_error("classOf: class of object is NULL\n");
-    }
-    return self->class;
+void *ctor(void *self_, va_list *arg) {
+  const struct BaseClass *class = classOf(self_);
+
+  if (!class->ctor) {
+    UbjectError.error("init: no constructor found\n");
+  }
+  return class->ctor(self_, arg);
 }
 
-void *ctor(void *self_, va_list *arg)
-{
-    const struct BaseClass *class = classOf(self_);
-
-    if (!class->ctor)
-    {
-        ubject_error("new: no constructor found\n");
-    }
-    return class->ctor(self_, arg);
+size_t sizeOf(const void *self_) {
+  const struct BaseClass *class = classOf(self_);
+  return class->size;
 }
 
-size_t sizeOf(const void *self_)
-{
-    const struct BaseClass *class = classOf(self_);
-    return class->size;
+const void *super(const void *class_) {
+  const struct BaseClass *class = class_;
+  if (!class) {
+    UbjectError.error("super: trying to access super class of NULL class\n");
+  }
+  if (!class->super) {
+    UbjectError.error("super: super class is NULL\n");
+  }
+  return class->super;
 }
 
-const void *super(const void *class_)
-{
-    const struct BaseClass *class = class_;
-    if (!class)
-    {
-        ubject_error("super: trying to access super class of NULL class\n");
-    }
-    if (!class->super)
-    {
-        ubject_error("super: super class is NULL\n");
-    }
-    return class->super;
+void *super_ctor(const void *class_, void *self, va_list *arg_) {
+  const struct BaseClass *superclass = super(class_);
+  if (!superclass) {
+    UbjectError.error("super: super class is NULL\n");
+  }
+  if (!superclass->ctor) {
+    UbjectError.error("super: class constructor is NULL\n");
+  }
+  return superclass->ctor(self, arg_);
 }
 
-void *super_ctor(const void *class_, void *self, va_list *arg_)
-{
-    const struct BaseClass *superclass = super(class_);
-    if (!superclass)
-    {
-        ubject_error("super: super class is NULL\n");
-    }
-    if (!superclass->ctor)
-    {
-        ubject_error("super: class constructor is NULL\n");
-    }
-    return superclass->ctor(self, arg_);
-}
+static void *BaseClass_ctor(void *self_, va_list *arg) {
+  struct BaseClass *self = self_;
 
-static void *BaseClass_ctor(void *self_, va_list *arg)
-{
-    struct BaseClass *self = self_;
+  // self->name = va_arg(*arg, char *);
+  self->super = va_arg(*arg, struct BaseClass *);
+  self->size = va_arg(*arg, size_t);
 
-    // self->name = va_arg(*arg, char *);
-    self->super = va_arg(*arg, struct BaseClass *);
-    self->size = va_arg(*arg, size_t);
+  if (!self->super)
+    UbjectError.error("BaseClass: class has no superclass\n");
 
-    if (!self->super)
-        ubject_error("BaseClass: class has no superclass\n");
-
-    const size_t offset = offsetof(struct BaseClass, ctor);
-    const size_t limit = sizeOf(self->super) - offset;
+  const size_t offset = offsetof(struct BaseClass, ctor);
+  const size_t limit = sizeOf(self->super) - offset;
 #ifdef __STDC_LIB_EXT1__
-    memcpy_s((char *)self + offset, limit, (char *)self->super + offset, limit);
+  memcpy_s((char *)self + offset, limit, (char *)self->super + offset, limit);
 #else
-    memcpy((char *)self + offset, (char *)self->super + offset, limit);
+  memcpy((char *)self + offset, (char *)self->super + offset, limit);
 #endif
 
-    {
-        typedef void (*voidf)();
-        voidf selector;
-        va_list args = *arg;
-        while ((selector = va_arg(args, voidf)))
-        {
-            voidf method = va_arg(args, voidf);
-            if (selector == (voidf)ctor)
-                *(voidf *)&self->ctor = method;
-        }
+  {
+    typedef void (*voidf)();
+    voidf selector;
+    va_list args = *arg;
+    while ((selector = va_arg(args, voidf))) {
+      voidf method = va_arg(args, voidf);
+      if (selector == (voidf)ctor)
+        *(voidf *)&self->ctor = method;
     }
-    return self;
+  }
+  return self;
 }
 
-static const struct BaseClass baseObject[] = {
-    {// BaseObject class
-     {baseObject + 1},
-     baseObject,
-     sizeof(struct BaseObject),
-     BaseObject_ctor},
-    {// BaseObject class
-     {baseObject + 1},
-     baseObject,
-     sizeof(struct BaseClass),
-     BaseClass_ctor}};
+static const struct BaseClass baseObject[] = {{// BaseObject class
+                                               {baseObject + 1},
+                                               baseObject,
+                                               sizeof(struct BaseObject),
+                                               BaseObject_ctor},
+                                              {// BaseObject class
+                                               {baseObject + 1},
+                                               baseObject,
+                                               sizeof(struct BaseClass),
+                                               BaseClass_ctor}};
 
 const void *BaseObject = baseObject;
 const void *BaseClass = baseObject + 1;
 
-void *new(const void *class_, ...)
-{
-    const struct BaseClass *class = class_;
-    struct BaseObject *object;
-    va_list arg;
+void *init(const void *class_, ...) {
+  const struct BaseClass *class = class_;
+  struct BaseObject *object;
+  va_list arg;
 
-    if (!class)
-        ubject_error("new: no class provided\n");
-    if (!class->size)
-        ubject_error("new: class size is invalid\n");
-    object = calloc(1, class->size);
-    if (!object)
-        ubject_error("new: out of memory\n");
-    object->class = class;
-    va_start(arg, class_);
-    object = ctor(object, &arg);
-    va_end(arg);
+  if (!class)
+    UbjectError.error("init: no class provided\n");
+  if (!class->size)
+    UbjectError.error("init: class size is invalid\n");
+  object = calloc(1, class->size);
+  if (!object)
+    UbjectError.error("init: out of memory\n");
+  object->class = class;
+  va_start(arg, class_);
+  object = ctor(object, &arg);
+  va_end(arg);
 
-    return object;
+  return object;
 }
 
+#define UBJECT_C
 #define UBJECT_EXPORTS
-#include "Ubject.h"
 #include "Ubject.r.h"
 
-static void *Ubject_dtor(void *self_)
-{
-    return self_;
+static void *Ubject_dtor(void *self_) { return self_; }
+
+static int Ubject_differ(const void *self_, const void *b) {
+  return self_ != b;
 }
 
-static int Ubject_differ(const void *self_, const void *b)
-{
-    return self_ != b;
+void *super_dtor(const void *class_, void *self) {
+  const struct TypeClass *superclass = super(class_);
+  if (!superclass) {
+
+    UbjectError.error("%s: super class is NULL\n", descName(class_));
+  }
+  if (!superclass->dtor) {
+    UbjectError.error("%s: %s: class destructor is NULL\n", descName(class_),
+                      descName(superclass));
+  }
+  return superclass->dtor(self);
 }
 
-void *super_dtor(const void *class_, void *self)
-{
-    const struct TypeClass *superclass = super(class_);
-    if (!superclass)
-    {
-
-        ubject_error("%s: super class is NULL\n", descName(class_));
-    }
-    if (!superclass->dtor)
-    {
-        ubject_error("%s: %s: class destructor is NULL\n", descName(class_), descName(superclass));
-    }
-    return superclass->dtor(self);
-}
-
-static void *TypeClass_ctor(void *self_, va_list *arg)
-{
-    struct TypeClass *self = super_ctor(TypeClass, self_, arg);
-    typedef void (*voidf)();
-    voidf selector;
-    va_list args = *arg;
-    while ((selector = va_arg(args, voidf)))
-    {
-        voidf method = va_arg(args, voidf);
-        if (selector == (voidf)dtor)
-            *(voidf *)&self->dtor = method;
-        else if (selector == (voidf)className)
-            *(voidf *)&self->name = method;
-    }
-    return self;
+static void *TypeClass_ctor(void *self_, va_list *arg) {
+  struct TypeClass *self = super_ctor(TypeClass, self_, arg);
+  typedef void (*voidf)();
+  voidf selector;
+  va_list args = *arg;
+  while ((selector = va_arg(args, voidf))) {
+    voidf method = va_arg(args, voidf);
+    if (selector == (voidf)dtor)
+      *(voidf *)&self->dtor = method;
+    else if (selector == (voidf)className)
+      *(voidf *)&self->name = method;
+  }
+  return self;
 }
 char desc[255];
-const char *descName(const void *class_)
-{
-    const struct TypeClass *class = class_;
+const char *descName(const void *class_) {
+  const struct TypeClass *class = class_;
 
-    if (class == Ubject)
-        return class->name;
-
-    const void *super_class = super(class);
-
-    if (super_class == TypeClass)
-    {
-        snprintf(desc, 255, "%sClass", class->name);
-        return desc;
-    }
-
-    if (super_class == BaseClass || super_class == BaseObject)
-        return "BaseClass";
-
+  if (class == Ubject)
     return class->name;
+
+  const void *super_class = super(class);
+
+  if (super_class == TypeClass) {
+    snprintf(desc, 255, "%sClass", class->name);
+    return desc;
+  }
+
+  if (super_class == BaseClass || super_class == BaseObject)
+    return "BaseClass";
+
+  return class->name;
 }
 
-const char *className(const void *self_)
-{
-    return descName(classOf(self_));
+const char *className(const void *self_) { return descName(classOf(self_)); }
+
+void *dtor(void *self_) {
+  const struct TypeClass *class = classOf(self_);
+  // check if self is a class descriptor
+  // all class descriptor should extend TypeClass
+  const void *super_class = super(class);
+  if (super_class == TypeClass) {
+    UbjectError.warn(
+        "TypeClass: trying to destroy class (%s) descriptor? Ignored\n",
+        className(self_));
+    return NULL;
+  }
+
+  // TypeClass extends BaseClass
+  if (super_class == BaseClass || class == BaseClass) {
+    UbjectError.warn(
+        "BaseClass: trying to destroy class (%s) descriptor? Ignored\n",
+        className(self_));
+    return NULL;
+  }
+  if (!class->dtor) {
+    UbjectError.error("%s: class destructor is NULL\n", className(self_));
+  }
+
+  return class->dtor(self_);
 }
 
-void *dtor(void *self_)
-{
-    const struct TypeClass *class = classOf(self_);
-    // check if self is a class descriptor
-    // all class descriptor should extend TypeClass
-    const void *super_class = super(class);
-    if (super_class == TypeClass)
-    {
-        ubject_warn("TypeClass: trying to destroy class (%s) descriptor? Ignored\n", className(self_));
-        return NULL;
-    }
-    // TypeClass extends BaseClass
-    if (super_class == BaseClass || class == BaseClass)
-    {
-        ubject_warn("BaseClass: trying to destroy class (%s) descriptor? Ignored\n", className(self_));
-        return NULL;
-    }
-    if (!class->dtor)
-    {
-        ubject_error("%s: class destructor is NULL\n", className(self_));
-    }
-
-    return class->dtor(self_);
+const int reference(void *self_) {
+  struct Ubject *self = self_;
+  if (!self) {
+    UbjectError.warn("reference: trying to reference NULL object\n");
+  }
+  return ++self->reference;
+}
+const int getReference(void *self_) {
+  struct Ubject *self = self_;
+  if (!self) {
+    UbjectError.warn("reference: trying to reference NULL object\n");
+  }
+  return self->reference;
 }
 
-void delete(void *self_)
-{
-    if (self_)
-        free(dtor(self_));
+void blip(void *self_) {
+  if (self_) {
+    struct Ubject *self = self_;
+    if (self->reference > 0)
+      self->reference--;
+    else
+      free(dtor(self_));
+  }
 }
+
+static void Ub_error(const char *fmt, ...) {
+  va_list arg;
+  puts("\e[0;31m");
+  va_start(arg, fmt);
+  vprintf(fmt, arg);
+  va_end(arg);
+  puts("\e[0m");
+  exit(-1);
+}
+static void Ub_warn(const char *fmt, ...) {
+  va_list arg;
+  puts("\e[0;33m");
+  va_start(arg, fmt);
+  vprintf(fmt, arg);
+  va_end(arg);
+  puts("\e[0m");
+  return;
+}
+
 static const struct BaseClass typeClass = {
     // struct BaseObject _; super object class
     {baseObject + 1},
@@ -298,3 +288,5 @@ static const struct TypeClass ubject = {
     Ubject_dtor};
 
 const void *Ubject = &ubject, *TypeClass = &typeClass;
+
+const struct Ubject_err_disp__ UbjectError = {Ub_error, Ub_warn};
