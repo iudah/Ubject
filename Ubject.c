@@ -223,7 +223,7 @@ void *dtor(void *self_) {
 const int reference(void *self_) {
   struct Ubject *self = self_;
   if (!self) {
-    UbjectError.warn("reference: trying to reference NULL object\n");
+    UbjectError.error("reference: trying to reference NULL object\n");
   }
   return ++self->reference;
 }
