@@ -25,17 +25,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/**
- * @brief Allocate and initialize a new object of the given class.
- *
- * This function allocates memory for a new object based on the provided class
- * and initializes it.
- *
- * @param class_ A pointer to the class descriptor.
- * @param ... Variable arguments passed to the object's constructor.
- * @return A pointer to the newly created object.
- */
-UBJECTAPI void UBJECTCALL *init(const void *class_, ...);
+#include "BaseClass.h"
+#include "BaseObject.h"
+#include "TypeClass.h"
+
+/**@brief Ubject descriptor */
+extern UBJECTAPI const void *Ubject;
 
 /**
  * @brief Free the memory associated with an object.
@@ -46,30 +41,6 @@ UBJECTAPI void UBJECTCALL *init(const void *class_, ...);
  * @param self_ A pointer to the object to be deleted.
  */
 UBJECTAPI void blip(void *self);
-
-/**@brief Ubject descriptor */
-extern UBJECTAPI const void *Ubject;
-
-/**
- * @brief Invoke the constructor of an object.
- *
- * This function invokes the constructor of the object based on its class.
- *
- * @param self_ A pointer to the object.
- * @param arg Variable arguments passed to the constructor.
- * @return A pointer to the initialized object.
- */
-UBJECTAPI void *ctor(void *self_, va_list *arg);
-
-/**
- * @brief Invoke the destructor of an object.
- *
- * This function invokes the destructor of the object based on its class.
- *
- * @param self_ A pointer to the object.
- * @return A pointer to the object after destruction.
- */
-UBJECTAPI void *dtor(void *self_);
 
 /**
  * @brief Increment reference count of object.
@@ -104,51 +75,5 @@ UBJECTAPI int differ(const void *self, const void *b);
  * @return The number of characters written to the file.
  */
 UBJECTAPI int puto(const void *self, FILE *f);
-
-extern UBJECTAPI const struct Ubject_err_disp__ {
-  void (*error)(const char *fmt, ...);
-  void (*warn)(const char *fmt, ...);
-} UbjectError;
-
-/**
- * @brief Get the class descriptor of an object.
- *
- * This function returns a pointer to the class descriptor of the given object.
- *
- * @param self_ A pointer to the object.
- * @return A pointer to the class descriptor.
- */
-UBJECTAPI const void *classOf(const void *self_);
-
-/**
- * @brief Get the name of class of object.
- *
- * This function returns the name of the class of the given object.
- *
- * @param self_ A pointer to the object.
- * @return The name of the class.
- */
-UBJECTAPI const char *className(const void *self_);
-UBJECTAPI const char *descName(const void *class_);
-/**
- * @brief Get the size of an object.
- *
- * This function returns the size of the given object.
- *
- * @param self_ A pointer to the object.
- * @return The size of the object in bytes.
- */
-UBJECTAPI size_t sizeOf(const void *self_);
-
-/**
- * @brief Get the superclass of a class.
- *
- * This function returns a pointer to the superclass descriptor of the given
- * class.
- *
- * @param class_ A pointer to the class.
- * @return A pointer to the superclass descriptor.
- */
-UBJECTAPI const void *super(const void *class_);
 
 #endif
