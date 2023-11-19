@@ -1,17 +1,16 @@
 #include "Ubject.h"
 
-int main()
-{
-    void *ctor_ = ctor;
+int main() {
+  void *ctor_ = ctor;
 
-    void *a = new (Ubject);
+  void *a = init(Ubject);
 
-    printf("%s\n", className(a));
-    printf("%s\n", className(classOf(a)));
+  printf("%s\n", className(a));
+  printf("%s\n", className(classOf(a)));
 
-    delete ((void *)classOf(a));
-    delete ((void *)classOf(classOf(a)));
-    delete (a);
+  blip((void *)classOf(a));
+  blip((void *)classOf(classOf(a)));
+  blip(a);
 
-    return 0;
+  return 0;
 }
