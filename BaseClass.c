@@ -154,7 +154,7 @@ int class_increment_internal_count(const void *class) {
   struct BaseClass *base_class = (struct BaseClass *)class;
 
   // Increment the internal count and return the updated value
-  return ++base_class->count;
+  return ++base_class->instance_count;
 }
 
 // Pointer to the BaseClass class
