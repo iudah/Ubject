@@ -21,8 +21,6 @@
 
 #endif
 
-#include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #include "BaseClass.h"
@@ -38,7 +36,7 @@ extern UBJECTAPI const void *Ubject;
  * This function deallocates the memory occupied by an object and invokes its
  * destructor if defined.
  *
- * @param self_ A pointer to the object to be deleted.
+ * @param self A pointer to the object to be deleted.
  */
 UBJECTAPI void blip(void *self);
 
@@ -50,8 +48,17 @@ UBJECTAPI void blip(void *self);
  * @param self_ A pointer to the object.
  * @return Current number of references made.
  */
-UBJECTAPI const int reference(void *self_);
-UBJECTAPI const int getReference(void *self_);
+UBJECTAPI int reference(void *self_);
+
+/**
+ * @brief Get reference count of object.
+ *
+ * This function gets the reference count of the given object.
+ *
+ * @param self_ A pointer to the object.
+ * @return Current number of references made.
+ */
+UBJECTAPI int getReference(void *self_);
 
 /**
  * @brief Check if two objects are different.
@@ -59,7 +66,7 @@ UBJECTAPI const int getReference(void *self_);
  * This function compares two objects and returns 1 if they are different, 0 if
  * they are the same.
  *
- * @param self_ A pointer to the first object.
+ * @param self A pointer to the first object.
  * @param b A pointer to the second object.
  * @return 1 if different, 0 if the same.
  */
@@ -70,10 +77,23 @@ UBJECTAPI int differ(const void *self, const void *b);
  *
  * This function prints the object's representation to the specified file.
  *
- * @param self_ A pointer to the object.
+ * @param self A pointer to the object.
  * @param f The file stream to write to.
  * @return The number of characters written to the file.
  */
 UBJECTAPI int puto(const void *self, FILE *f);
+
+/**
+ * @brief Get the object's name.
+ *
+ * This function retrieves the name of the object and stores it in the provided
+ * buffer.
+ *
+ * @param self A pointer to the object.
+ * @param buff The buffer to store the object's name.
+ * @param buf_len The length of the buffer.
+ * @return The number of characters written to the buffer.
+ */
+UBJECTAPI int objectName(const void *self, char *buff, int buf_len);
 
 #endif
