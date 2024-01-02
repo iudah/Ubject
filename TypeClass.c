@@ -1,15 +1,18 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "BaseClass.h"
+#include "BaseClass.r.h"
 #include "BaseInternal.r.h"
 #include "BaseObject.h"
 
-//#define TYPECLASS_EXPORTS
 #include "TypeClass.h"
 #define TYPECLASS_C
 #include "TypeClass.r.h"
 
+// This function is used to call the destructor of the superclass of a given
+// class. Handles potential errors related to NULL superclass or missing
+// destructor.
 void *super_dtor(const void *class_, void *self) {
   const struct TypeClass *superclass = super(class_);
   if (!superclass) {
@@ -23,7 +26,10 @@ void *super_dtor(const void *class_, void *self) {
   return superclass->dtor(self);
 }
 
+// This array is used to store the name of the class.
 char desc[255];
+// This function is used to get the name of a class. Handles different scenarios
+// such as TypeClass, BaseClass, or custom classes.
 const char *descName(const void *class_) {
   const struct TypeClass *class = class_;
 
@@ -40,8 +46,12 @@ const char *descName(const void *class_) {
   return class->name;
 }
 
+// This function is used to get the name of the class of an object.
 const char *className(const void *self_) { return descName(classOf(self_)); }
 
+// This function is used to call the destructor of an object. Handles errors
+// related to NULL destructors and inappropriate destruction of class
+// descriptors.
 void *dtor(void *self_) {
   const struct TypeClass *class = classOf(self_);
   // check if self is a class descriptor
@@ -68,6 +78,8 @@ void *dtor(void *self_) {
   return class->dtor(self_);
 }
 
+// Constructor for the TypeClass, initializes its methods such as dtor and
+// className. Used during class initialization.
 static void *TypeClass_ctor(void *self_, va_list *arg) {
   struct TypeClass *self = super_ctor(TypeClass, self_, arg);
   typedef void (*voidf)();
@@ -83,10 +95,15 @@ static void *TypeClass_ctor(void *self_, va_list *arg) {
   return self;
 }
 
+// Declaration and initialization of the global TypeClass.
 struct BaseClass typeClass = {0};
 const void *TypeClass = &typeClass;
+
+// A constructor to initialize TypeClass during program startup.
 static void __attribute__((__constructor__(BASE_CTOR_PRIORITY + 4)))
 initTypeClass(void) {
+  if (!BaseClass)
+    UbjectError.error("(?)\n");
   base_internal_make_a_class_((void *)TypeClass, BaseClass,
                               sizeof(struct TypeClass), TypeClass_ctor);
 }
