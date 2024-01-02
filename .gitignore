@@ -2,3 +2,6 @@ core
 build
 bin
 .vscode
+.vscode/*
+.clangd
+Makefile_
