@@ -11,7 +11,7 @@ COBJ          := $(CSRC:%.c=$(CBUILD)%.o)
 EXT           := so
 
 IFLAGS        :=-I.
-GFLAGS        :=-g -fno-omit-frame-pointer -fsanitize=address 
+GFLAGS        :=-g
 
 COBJEXTRAFLAG :=
 CAPPEXTRAFLAG :=
@@ -20,10 +20,13 @@ CDEFINES      :=
 ifeq ($(host),  windows)
 endif
 
-ifeq (target, windows)
+ifeq ($(target), windows)
 COBJEXTRAFLAG +=-s -Wl,--subsystem,windows,--out-implib,bin/lib$(OUT)-0.a
 CAPPEXTRAFLAG +=-l$(OUT)-0
 CDEFINES      +=-DBASECLASS_EXPORTS -DBASEOBJECT_EXPORTS -DTYPECLASS_EXPORTS -DUBJECT_EXPORTS
+EXT           := dll
+else
+GFLAGS        += -fno-omit-frame-pointer -fsanitize=address
 endif
 
 ALL: PREBUILD APP POSTBUILD
@@ -49,10 +52,11 @@ APP: $(CBUILD)main.o bin/lib$(OUT).$(EXT)
 	$(CC) $(CLDFLAGS) $(GFLAGS) -l$(OUT)  $< -o bin/$(OUT) $(CAPPEXTRAFLAG)	
 
 $(CBUILD)main.o: test.c
-	$(CC) $(CFLAGS) $(GFLAGS) -g $< -o $@ 
+	$(CC) $(CFLAGS) $(GFLAGS) $< -o $@ 
 
 bin/lib$(OUT).$(EXT): $(COBJ)
 	$(CC) $(GFLAGS) -shared -fPIC $(GFLAGS) -o $@ $^ $(COBJEXTRAFLAG)
+	
 $(CBUILD)%.o:%.c %.h %.r.h
 	$(CC) $(CFLAGS) $(GFLAGS) $< -o $@  $(CDEFINES)
 
@@ -68,8 +72,8 @@ endif
 clean: remove_all ALL
 
 remove_all:
-	@rm -r build
-	@rm -r bin
+	@rm -r -f build
+	@rm -r -f bin
 	@echo build cleaned
 	@echo
 
