@@ -5,9 +5,6 @@
 #ifndef UBJECT_R_H
 #define UBJECT_R_H
 
-#include <stdarg.h>
-#include <stddef.h>
-
 #ifdef _WIN32
 
 #ifdef UBJECT_EXPORTS
@@ -23,6 +20,8 @@
 #define UBJECTCALL
 
 #endif
+
+#define UBJECT_PRIORITY (6993)
 
 /**
  * @struct Ubject
