@@ -4,4 +4,4 @@ bin
 .vscode
 .vscode/*
 .clangd
-Makefile_
+Makefile_*
