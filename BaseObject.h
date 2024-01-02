@@ -17,7 +17,6 @@
 
 #endif
 
-
 /**
  * @brief Allocate and initialize a new object of the given class.
  *
@@ -40,8 +39,36 @@ BASEOBJECTAPI void BASEOBJECTCALL *init(const void *class_, ...);
  */
 BASEOBJECTAPI const void *classOf(const void *self_);
 
+/**
+ * @brief Get the index of the given object in the object table.
+ *
+ * This function returns the index of the given object in the object table.
+ *
+ * @param self_ A pointer to the object.
+ * @return The index of the object in the object table.
+ */
+int ubjectIndex(const void *self_);
+
+/**
+ * @brief Structure containing function pointers for printing errors and
+ * warnings
+ *
+ */
 extern BASEOBJECTAPI const struct Ubject_err_disp__ {
-  void (*error)(const char *fmt, ...);
+  /**
+   * @brief Function pointer for printing an error message
+   * Call abort() after printing.
+   * @param fmt The format string for the error message
+   * @param ... Variable argument to be formatted according to the format string
+   */
+  void (*error)(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+
+  /**
+   * @brief Function pointer for printing a warning message
+   *
+   * @param fmt The format string for the warning message
+   * @param ... Variable arguments to be formatted according to the formatstring
+   */
   void (*warn)(const char *fmt, ...);
 } UbjectError;
 
