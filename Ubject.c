@@ -2,6 +2,7 @@
  * @file Ubject.c
  * @brief Ubject implementation
  */
+#include <mem_lk.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -61,10 +62,11 @@ int getReference(void *self_) {
 void blip(void *self_) {
   if (self_) {
     struct Ubject *self = self_;
-    if (self->reference > 0)
+    if (self->reference > 0) {
       self->reference--;
-    else
-      free(dtor(self_));
+    } else {
+      FREE(dtor(self_));
+    }
   }
 }
 
@@ -74,12 +76,17 @@ int objectName(const void *self, char *buff, int buf_len) {
   return snprintf(buff, buf_len, "%s_%i", className(self), ubjectIndex(self));
 }
 
+static void fini_ubject(void);
 const void *Ubject = 0;
 
 // Ubject descriptor initialization. This function initializes the Ubject
 // descriptor during program startup.
 static void __attribute__((__constructor__(UBJECT_PRIORITY))) initUbject(void) {
-  Ubject =
-      init(TypeClass, BaseObject, sizeof(struct Ubject), ctor, Ubject_ctor,
-           dtor, Ubject_dtor, className, "Ubject", differ, Ubject_differ, NULL);
+  Ubject = init(TypeClass, BaseObject, sizeof(struct Ubject), ctor, Ubject_ctor,
+                dtor, Ubject_dtor, className, "Ubject", NULL);
+atexit(fini_ubject);
+}
+
+static void fini_ubject(){
+FREE(Ubject);
 }

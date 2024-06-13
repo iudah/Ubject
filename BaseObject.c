@@ -4,6 +4,8 @@
 #define __STDC_WANT_LIB_EXT1__ 1 // required for memcpy_s
 #include <stdlib.h>
 
+#include <mem_lk.h>
+
 // Include header files for the base class and base object
 #include "BaseClass.h"
 
@@ -101,7 +103,7 @@ void *init(const void *class_, ...) {
     UbjectError.error("init: no class provided\n");
   if (!class_size)
     UbjectError.error("init: class size is invalid\n");
-  object = calloc(1, class_size);
+  object = CALLOC(1, class_size);
   if (!object)
     UbjectError.error("init: out of memory\n");
   object->class = class;

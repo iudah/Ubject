@@ -21,6 +21,11 @@
 
 #endif
 
+#include <stdarg.h>
+#include <stddef.h>
+
+#include "BaseObject.r.h"
+
 #define UBJECT_PRIORITY (6993)
 
 /**
@@ -33,8 +38,8 @@ struct Ubject {
 #ifndef UBJECT_C
   char ___[sizeof(struct UBJECT_C_ {
 #endif
-    /** Pointer to the class descriptor of the object. */
-    const struct BaseClass *class_;
+    /** Inherited base class structure. */
+    struct BaseObject _parent_struct_;
     /** Number of time object is referenced*/
     int reference;
 #ifndef UBJECT_C
