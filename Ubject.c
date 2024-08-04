@@ -36,6 +36,13 @@ static int Ubject_differ(const void *self_, const void *b) {
   return self_ != b;
 }
 
+static int Ubject_puto(const void *self_, const FILE *f) { return 0; }
+
+static void *Ubject_rollb(void *self_, const FILE *f) {
+  ((struct Ubject *)self_)->reference--;
+  return self_;
+}
+
 // Increment reference count of Ubject object. This function increments the
 // reference counter of the given Ubject object.
 int reference(void *self_) {
@@ -65,6 +72,8 @@ void blip(void *self_) {
     if (self->reference > 0) {
       self->reference--;
     } else {
+      if (self->reference < 0)
+        puts("less");
       FREE(dtor(self_));
     }
   }
@@ -76,6 +85,20 @@ int objectName(const void *self, char *buff, int buf_len) {
   return snprintf(buff, buf_len, "%s_%i", className(self), ubjectIndex(self));
 }
 
+int serialize(const void *self, const char *fname) {
+  FILE *f = fopen(fname, "wb");
+  puto(self, f);
+  fclose(f);
+  return 0;
+}
+
+void *deserialize(const char *fname) {
+  FILE *f = fopen(fname, "rb");
+  void *obj = rollback(f);
+  fclose(f);
+  return obj;
+}
+
 static void fini_ubject(void);
 const void *Ubject = 0;
 
@@ -83,10 +106,12 @@ const void *Ubject = 0;
 // descriptor during program startup.
 static void __attribute__((__constructor__(UBJECT_PRIORITY))) initUbject(void) {
   Ubject = init(TypeClass, BaseObject, sizeof(struct Ubject), ctor, Ubject_ctor,
-                dtor, Ubject_dtor, className, "Ubject", NULL);
-atexit(fini_ubject);
+                dtor, Ubject_dtor,      //
+                className, "Ubject",    //
+                puto, Ubject_puto,      //
+                rollback, Ubject_rollb, //
+                NULL);
+  atexit(fini_ubject);
 }
 
-static void fini_ubject(){
-FREE(Ubject);
-}
+static void fini_ubject() { FREE((void *)Ubject); }

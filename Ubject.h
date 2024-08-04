@@ -72,16 +72,6 @@ UBJECTAPI int getReference(void *self_);
  */
 UBJECTAPI int differ(const void *self, const void *b);
 
-/**
- * @brief Print the object's representation to a file.
- *
- * This function prints the object's representation to the specified file.
- *
- * @param self A pointer to the object.
- * @param f The file stream to write to.
- * @return The number of characters written to the file.
- */
-UBJECTAPI int puto(const void *self, FILE *f);
 
 /**
  * @brief Get the object's name.
@@ -95,5 +85,8 @@ UBJECTAPI int puto(const void *self, FILE *f);
  * @return The number of characters written to the buffer.
  */
 UBJECTAPI int objectName(const void *self, char *buff, int buf_len);
+
+UBJECTAPI int serialize(const void *clazz, const char*fpath);
+UBJECTAPI void* deserialize(const char*fpath);
 
 #endif
