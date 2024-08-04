@@ -89,15 +89,10 @@ void base_internal_set_base_object_(const void *base_obj_desc) {
   BaseObject = base_obj_desc;
 }
 
-// Function to Initialize an Object:
-// This function initializes an object of a given class. It takes a pointer to
-// the class of the object being initialized and a variable argument list, and
-// it returns a pointer to the initialized object.
-void *init(const void *class_, ...) {
+void *partial_init(const void *class_) {
   const struct BaseClass *class = class_;
   size_t class_size = class_internal_size(class);
   struct BaseObject *object;
-  va_list arg;
 
   if (!class)
     UbjectError.error("init: no class provided\n");
@@ -107,11 +102,22 @@ void *init(const void *class_, ...) {
   if (!object)
     UbjectError.error("init: out of memory\n");
   object->class = class;
-  va_start(arg, class_);
-  object = ctor(object, &arg);
-  va_end(arg);
 
   object->instance_index = class_increment_internal_count(class);
+
+  return object;
+}
+
+// Function to Initialize an Object:
+// This function initializes an object of a given class. It takes a pointer to
+// the class of the object being initialized and a variable argument list, and
+// it returns a pointer to the initialized object.
+void *init(const void *class_, ...) {
+  va_list arg;
+
+  va_start(arg, class_);
+  void *object = ctor(partial_init(class_), &arg);
+  va_end(arg);
 
   return object;
 }

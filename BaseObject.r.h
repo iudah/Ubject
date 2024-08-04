@@ -10,7 +10,8 @@
  * @brief Constant used to set the priority of library constructor for
  * BaseObject.
  */
-#define BASE_CTOR_PRIORITY 6987
+#include <stdint.h>
+#define BASE_CTOR_PRIORITY (6987)
 
 /**
  * @struct BaseObject
@@ -32,7 +33,7 @@ struct BaseObject {
     /**
      * Integer used to uniquely identify instances of objects.
      */
-    int instance_index;
+    int32_t instance_index;
 #ifndef BASEOBJECT_C
   })];
 #endif

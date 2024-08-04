@@ -17,6 +17,8 @@
 
 #endif
 
+void *partial_init(const void *class_) ;
+
 /**
  * @brief Allocate and initialize a new object of the given class.
  *
