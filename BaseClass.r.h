@@ -10,6 +10,7 @@
 #ifndef BASECLASS_R_H
 #define BASECLASS_R_H
 
+#include <stdint.h>
 #include <stdarg.h>
 #include <stddef.h>
 
@@ -40,7 +41,7 @@ struct BaseClass {
      * This member stores the size of the BaseClass struct in bytes.
      * It is used for memory management and object allocation.
      */
-    size_t size;
+    uint64_t size;
 
     /**
      * @brief **Count of objects of this class.**
@@ -49,7 +50,7 @@ struct BaseClass {
      * created. It is used for tracking the number of objects of this class that
      * are currently in use.
      */
-    int instance_count;
+    int32_t instance_count;
 
     /**
      * @brief **Constructor function for the BaseClass struct.**

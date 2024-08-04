@@ -7,7 +7,7 @@
 #include "BaseClass.r.h"
 
 void base_internal_make_a_class_(void *class, const struct BaseClass *super,
-                                 size_t size,
+                                 uint64_t size,
                                  void *(*ctor)(void *self, va_list *arg));
 void base_internal_add_meta_class_(void *class, const void *meta_class);
 void base_internal_set_base_object_(const void *class);
