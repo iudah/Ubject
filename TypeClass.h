@@ -38,4 +38,17 @@ TYPECLASSAPI void *dtor(void *self_);
 TYPECLASSAPI const char *className(const void *self_);
 
 TYPECLASSAPI const char *descName(const void *class_);
+
+/**
+ * @brief Print the object's representation to a file.
+ *
+ * This function prints the object's representation to the specified file.
+ *
+ * @param self A pointer to the object.
+ * @param f The file stream to write to.
+ * @return The number of characters written to the file.
+ */
+TYPECLASSAPI int puto(const void *self, FILE *f);
+TYPECLASSAPI void* rollback(FILE *f);
+
 #endif

@@ -19,6 +19,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #include "BaseClass.r.h"
 #include "BaseObject.r.h"
@@ -42,6 +43,10 @@ struct TypeClass {
 
     /** Pointer to the destructor function of the class. */
     void *(*dtor)(void *self);
+
+    int (*puto)(void *self, FILE *f);
+
+    void *(*rollb)(void *self, FILE *f);
 
 #ifndef TYPECLASS_C
   })];
@@ -76,4 +81,6 @@ extern TYPECLASSAPI const void *TypeClass;
  */
 TYPECLASSAPI void *super_dtor(const void *class_, void *self);
 
+TYPECLASSAPI int super_puto(const void *class_, void *self, FILE *f);
+TYPECLASSAPI void *super_rollback(const void *class_, void *self, FILE *f) ;
 #endif
