@@ -26,7 +26,7 @@
 
 #include "BaseObject.r.h"
 
-#define UBJECT_PRIORITY (3030)
+#define UBJECT_PRIORITY (UBJECT_TYPECLASS_PRIORITY + 2)
 
 /**
  * @struct Ubject

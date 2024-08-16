@@ -24,6 +24,8 @@
 #include "BaseClass.r.h"
 #include "BaseObject.r.h"
 
+#define UBJECT_TYPECLASS_PRIORITY (UBJECT_BASECLASS_PRIORITY + 2)
+
 /**
  * @struct TypeClass
  * @brief Represents a base class with class information.
@@ -82,5 +84,5 @@ extern TYPECLASSAPI const void *TypeClass;
 TYPECLASSAPI void *super_dtor(const void *class_, void *self);
 
 TYPECLASSAPI int super_puto(const void *class_, void *self, FILE *f);
-TYPECLASSAPI void *super_rollback(const void *class_, void *self, FILE *f) ;
+TYPECLASSAPI void *super_rollback(const void *class_, void *self, FILE *f);
 #endif

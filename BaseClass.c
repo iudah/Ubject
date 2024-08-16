@@ -163,7 +163,7 @@ int class_increment_internal_count(const void *class) {
 const void *BaseClass = &baseClass;
 
 // Function to initialize the BaseClass class
-static void __attribute__((__constructor__(BASE_CTOR_PRIORITY + 2)))
+static void __attribute__((__constructor__(UBJECT_BASECLASS_PRIORITY)))
 initBaseClass(void) {
   // Set the base object for the BaseClass class
   base_internal_set_base_object_(&baseObject);

@@ -295,7 +295,7 @@ struct BaseClass typeClass = {0};
 const void *TypeClass = &typeClass;
 
 // A constructor to initialize TypeClass during program startup.
-static void __attribute__((__constructor__(BASE_CTOR_PRIORITY + 4)))
+static void __attribute__((__constructor__(UBJECT_TYPECLASS_PRIORITY)))
 initTypeClass(void) {
   if (!BaseClass)
     UbjectError.error("(?)\n");

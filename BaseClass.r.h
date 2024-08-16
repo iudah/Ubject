@@ -10,11 +10,13 @@
 #ifndef BASECLASS_R_H
 #define BASECLASS_R_H
 
-#include <stdint.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "BaseObject.r.h"
+
+#define UBJECT_BASECLASS_PRIORITY (BASE_CTOR_PRIORITY + 2)
 
 struct BaseClass {
 
